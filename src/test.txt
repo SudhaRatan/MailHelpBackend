@@ -1,0 +1,77 @@
+
+app.get("/mailData/:index", async (req, res) => {
+  try{
+    const index = Number(req.params.index);
+    const d = await listLabels(auth, index);
+    var html = ""
+    if(index !=0){
+      html+= `<div style="display:flex;justify-content:space-between"><div><a href='/mailData/${index-1}'>Prev mail</a>    `
+    }
+    html += `<a href='/mailData/${index+1}'>Next mail</a></div><a href='/auth/signout'>Signout</a><div><br>`+d.html
+    res.send(html);
+  }catch(e: any){
+    console.log(e)
+    res.redirect("/auth/google")
+  }
+});
+
+const oauth2Client = new google.auth.OAuth2(
+  CLIENT_ID,
+  CLIENT_SECRET,
+  REDIRECT_URL
+);
+
+app.get("/", (req, res) => {
+  const d = {
+    html: `<h1>MailHelp</h1><a href="/auth/google">Login With Google</a>`,
+  };
+  res.send(d.html);
+});
+
+app.get("/auth/google", (req, res) => {
+  const authUrl = oauth2Client.generateAuthUrl({
+    access_type: "offline",
+    scope: SCOPES,
+  });
+  res.redirect(authUrl);
+});
+
+app.get("/oauth2callback", async (req, res) => {
+  const { code } = req.query;
+  try {
+    const { tokens } = await oauth2Client.getToken(code as string);
+    oauth2Client.setCredentials(tokens);
+    saveCredentials(tokens);
+    console.log("auth--->>>",tokens)
+    authorize().then(a => {
+      auth = a
+      console.log(a)
+    }).catch((e: any) => {
+      console.error(e)
+    })
+    // Store the tokens securely (e.g., in a database) for later use
+    console.log("Tokens:", tokens);
+    res.send("Authentication successful! <br> <a href='mailData/0'>Get mail data</a>");
+  } catch (error) {
+    console.error("Error getting tokens:", error);
+    res.status(500).send("Error authenticating");
+  }
+});
+
+app.get('/auth/signout', async (req, res) => {
+  try {
+      // Revoke the user's access token
+      await oauth2Client.revokeToken(oauth2Client.credentials.access_token!);
+      // Clear session data (if you are using sessions)
+
+      // Redirect to the home page or a sign-out confirmation page
+      res.redirect('/');
+  } catch (error) {
+      console.error('Error signing out:', error);
+      res.status(500).send('Error signing out');
+  }
+});
+
+server.listen(3000, function () {
+  console.log("listening");
+});
