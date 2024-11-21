@@ -11,6 +11,12 @@ import cors from "cors";
 
 import { verifyToken } from "./middlewares/Auth";
 import { getMailData } from "./utils/MailUtils";
+import {
+  addCategory,
+  deleteCategory,
+  getCategories,
+  updateCategory,
+} from "./dataAccess/categoryDL";
 
 const app = express();
 const server = http.createServer(app);
@@ -72,11 +78,15 @@ app.get("/getMails", verifyToken, async (req, res) => {
   const gmail = google.gmail({ version: "v1", auth: oauth2Client });
   try {
     var r;
-    r = await gmail.users.messages.list({ userId: "me", maxResults: 20, pageToken: nextPageToken } as gmail_v1.Params$Resource$Users$Messages$List);
+    r = await gmail.users.messages.list({
+      userId: "me",
+      maxResults: 20,
+      pageToken: nextPageToken,
+    } as gmail_v1.Params$Resource$Users$Messages$List);
     // console.log(r.data);
     res.send(r.data);
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(401).send();
   }
 });
@@ -91,6 +101,31 @@ app.get("/mailData/:id", async (req, res) => {
     console.log(e);
     res.status(401).send(e);
   }
+});
+
+app.get("/categories", async (req, res) => {
+  const result = await getCategories();
+  res.send(result.recordset);
+});
+
+
+// Categories
+app.post("/categories", async (req, res) => {
+  const { label } = req.body;
+  const result = await addCategory(label);
+  res.send(result.rowsAffected);
+});
+
+app.put("/categories", async (req, res) => {
+  const { id, label } = req.body;
+  const result = await updateCategory(id, label);
+  res.send(result.rowsAffected);
+});
+
+app.delete("/categories", async (req, res) => {
+  const { id } = req.body;
+  const result = await deleteCategory(id);
+  res.send(result);
 });
 
 server.listen(3000, function () {

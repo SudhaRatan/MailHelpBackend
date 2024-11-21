@@ -20,6 +20,7 @@ const http_1 = __importDefault(require("http"));
 const cors_1 = __importDefault(require("cors"));
 const Auth_1 = require("./middlewares/Auth");
 const MailUtils_1 = require("./utils/MailUtils");
+const categoryDL_1 = require("./dataAccess/categoryDL");
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 const port = 3000;
@@ -62,7 +63,6 @@ app.post("/api/auth", (req, res) => __awaiter(void 0, void 0, void 0, function* 
 }));
 app.get("/getMails", Auth_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { nextPageToken } = req.query;
-    console.log(nextPageToken, "Mails");
     const gmail = googleapis_1.google.gmail({ version: "v1", auth: oauth2Client });
     try {
         var r;
@@ -86,6 +86,10 @@ app.get("/mailData/:id", (req, res) => __awaiter(void 0, void 0, void 0, functio
         console.log(e);
         res.status(401).send(e);
     }
+}));
+app.get("/categories", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield (0, categoryDL_1.getCategories)();
+    res.send(result.recordset);
 }));
 server.listen(3000, function () {
     console.log("listening");
