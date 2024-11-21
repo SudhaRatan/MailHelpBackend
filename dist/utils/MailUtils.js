@@ -21,12 +21,13 @@ const getMailData = (id, gmail) => {
         res1
             .then((data) => __awaiter(void 0, void 0, void 0, function* () {
             if (data.data.raw) {
+                // console.log(data.data)
                 // Decode the Base64 URL-encoded email content
                 const decodedMessage = Buffer.from(data.data.raw, "base64url").toString("utf-8");
                 const result = yield (0, mailparser_1.simpleParser)(decodedMessage, {
                     decodeStrings: true,
                 });
-                res(result);
+                res(Object.assign(Object.assign({}, result), { snippet: data.data.snippet }));
             }
         }))
             .catch((error) => {

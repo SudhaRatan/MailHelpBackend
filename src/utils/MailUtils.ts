@@ -12,6 +12,7 @@ export const getMailData = (id: string, gmail: gmail_v1.Gmail) => {
     res1
       .then(async (data: any) => {
         if (data.data.raw) {
+          // console.log(data.data)
           // Decode the Base64 URL-encoded email content
           const decodedMessage = Buffer.from(
             data.data.raw,
@@ -20,7 +21,7 @@ export const getMailData = (id: string, gmail: gmail_v1.Gmail) => {
           const result = await simpleParser(decodedMessage, {
             decodeStrings: true,
           });
-          res(result);
+          res({...result, snippet: data.data.snippet});
         }
       })
       .catch((error: any) => {
