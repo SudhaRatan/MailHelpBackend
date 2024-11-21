@@ -108,7 +108,6 @@ app.get("/categories", async (req, res) => {
   res.send(result.recordset);
 });
 
-
 // Categories
 app.post("/categories", async (req, res) => {
   const { label } = req.body;
@@ -128,9 +127,10 @@ app.delete("/categories", async (req, res) => {
   res.send(result);
 });
 
-app.post("/notification", async(req,res) => {
-  console.log(req.body)
-})
+app.post("/notification", async (req, res) => {
+  console.log(req.body);
+  res.status(200).send();
+});
 
 server.listen(3000, function () {
   console.log("listening");
