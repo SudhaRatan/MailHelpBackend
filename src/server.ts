@@ -128,6 +128,10 @@ app.delete("/categories", async (req, res) => {
   res.send(result);
 });
 
+app.post("/notification", async(req,res) => {
+  console.log(req.body)
+})
+
 server.listen(3000, function () {
   console.log("listening");
 });
