@@ -61,6 +61,15 @@ app.post("/api/auth", async (req, res) => {
 
     oauth2Client.setCredentials({ access_token: access_token });
     // const response = await gmail.users.messages.list({ userId: 'me' });
+    const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+    gmail.users.watch({
+      userId: "me",
+      requestBody: {
+        labelIds: ["INBOX"],
+        topicName: "projects/mailhelp-442113/topics/MyTopic",
+        labelFilterAction: "INCLUDE",
+      },
+    });
 
     res.json({
       success: true,
@@ -72,6 +81,11 @@ app.post("/api/auth", async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
+
+app.get("/logout",(req,res) => {
+  const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+  gmail.users.stop()
+})
 
 app.get("/getMails", verifyToken, async (req, res) => {
   const { nextPageToken } = req.query;
