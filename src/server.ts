@@ -21,6 +21,7 @@ import sql from "./dataAccess/init";
     console.log("Connected to db")
   } catch (err) {
     // ... error checks
+    console.log(err)
   }
 })();
 
