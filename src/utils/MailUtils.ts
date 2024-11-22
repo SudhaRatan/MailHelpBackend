@@ -21,7 +21,7 @@ export const getMailData = (id: string, gmail: gmail_v1.Gmail) => {
           const result = await simpleParser(decodedMessage, {
             decodeStrings: true,
           });
-          res({...result, snippet: data.data.snippet});
+          res({...result, snippet: data.data.snippet, historyId: data.data.historyId});
         }
       })
       .catch((error: any) => {

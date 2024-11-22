@@ -140,13 +140,7 @@ io.on("connection", (socket) => {
 app.post("/notification", async (req, res) => {
   console.log(req.body);
   const decodedData = JSON.parse(atob(req.body.message.data));
-  const gmail = google.gmail({ version: "v1", auth: oauth2Client });
-  const result = await gmail.users.history.list({
-    userId: "me",
-    startHistoryId: decodedData.historyId,
-  });
-    console.log(result)
-  io.sockets.in(decodedData.emailAddress).emit("notification", result.data);
+  io.sockets.in(decodedData.emailAddress).emit("notification", decodedData);
   res.status(200).send();
 });
 
