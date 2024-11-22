@@ -145,7 +145,7 @@ app.post("/notification", async (req, res) => {
     userId: "me",
     startHistoryId: decodedData.historyId,
   });
-  
+    console.log(result)
   io.sockets.in(decodedData.emailAddress).emit("notification", result.data);
   res.status(200).send();
 });
