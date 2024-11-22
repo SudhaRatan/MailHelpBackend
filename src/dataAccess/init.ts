@@ -6,6 +6,7 @@ import sql from "mssql";
     await sql.connect(process.env.DB_URL as string);
   } catch (err) {
     // ... error checks
+    console.log(err)
   }
 })();
 
