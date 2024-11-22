@@ -16,11 +16,20 @@ const mssql_1 = __importDefault(require("mssql"));
 (() => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // make sure that any items are correctly URL encoded in the connection string
-        yield mssql_1.default.connect(process.env.DB_URL);
+        yield mssql_1.default.connect({
+            server: process.env.SERVER,
+            user: process.env.USER,
+            password: process.env.Password,
+            options: {
+                trustedConnection: true,
+                trustServerCertificate: true,
+            },
+        });
         console.log("Connected to db");
     }
     catch (err) {
         // ... error checks
+        console.log(err);
     }
 }))();
 exports.default = mssql_1.default;

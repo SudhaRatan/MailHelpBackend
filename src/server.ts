@@ -12,20 +12,8 @@ import { getMailData } from "./utils/MailUtils";
 import categoryRouter from "./routes/category";
 
 import { Server } from "socket.io";
-import sql from "./dataAccess/init";
 
-(async () => {
-  try {
-    // make sure that any items are correctly URL encoded in the connection string
-    await sql.connect(process.env.DB_URL as string);
-    console.log("Connected to db")
-  } catch (err) {
-    // ... error checks
-    console.log(err)
-  }
-})();
-
-console.log(process.env.DB_URL)
+console.log(process.env.DB_URL);
 
 const app = express();
 const server = http.createServer(app);

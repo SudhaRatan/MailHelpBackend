@@ -23,6 +23,7 @@ const MailUtils_1 = require("./utils/MailUtils");
 // Routes
 const category_1 = __importDefault(require("./routes/category"));
 const socket_io_1 = require("socket.io");
+console.log(process.env.DB_URL);
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 const port = 3000;
