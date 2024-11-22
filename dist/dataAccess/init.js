@@ -24,6 +24,7 @@ const mssql_1 = __importDefault(require("mssql"));
                 trustedConnection: true,
                 trustServerCertificate: true,
             },
+            database: "storedb"
         });
         console.log("Connected to db");
     }
