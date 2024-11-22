@@ -17,6 +17,7 @@ const mssql_1 = __importDefault(require("mssql"));
     try {
         // make sure that any items are correctly URL encoded in the connection string
         yield mssql_1.default.connect(process.env.DB_URL);
+        console.log("Connected to db");
     }
     catch (err) {
         // ... error checks
