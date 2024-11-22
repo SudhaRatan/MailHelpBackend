@@ -54,7 +54,7 @@ app.post("/api/auth", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         oauth2Client.setCredentials({ access_token: access_token });
         // const response = await gmail.users.messages.list({ userId: 'me' });
         const gmail = googleapis_1.google.gmail({ version: "v1", auth: oauth2Client });
-        yield gmail.users.stop({ userId: "me" });
+        // await gmail.users.stop({ userId: "me" });
         yield gmail.users.watch({
             userId: "me",
             requestBody: {

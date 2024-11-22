@@ -16,7 +16,7 @@ const mssql_1 = __importDefault(require("mssql"));
 (() => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // make sure that any items are correctly URL encoded in the connection string
-        yield mssql_1.default.connect("Server=tcp:rocketf1.database.windows.net,1433;Initial Catalog=storedb;Persist Security Info=False;User ID=rocket;Password=Ratan@1112;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=60;");
+        yield mssql_1.default.connect(process.env.DB_URL);
     }
     catch (err) {
         // ... error checks
