@@ -59,7 +59,7 @@ app.post("/api/auth", async (req, res) => {
     oauth2Client.setCredentials({ access_token: access_token });
     // const response = await gmail.users.messages.list({ userId: 'me' });
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
-    await gmail.users.stop({ userId: "me" });
+    // await gmail.users.stop({ userId: "me" });
     await gmail.users.watch({
       userId: "me",
       requestBody: {
