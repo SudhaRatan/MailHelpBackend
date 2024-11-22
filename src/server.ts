@@ -117,12 +117,16 @@ app.get("/mailData/:id", async (req, res) => {
 
 app.get("/getNew/:historyId", async (req, res) => {
   const { historyId } = req.params;
-  const gmail = google.gmail({ version: "v1", auth: oauth2Client });
-  const result = await gmail.users.history.list({
-    userId: "me",
-    startHistoryId: historyId,
-  });
-  res.send(result.data);
+  try{
+    const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+    const result = await gmail.users.history.list({
+      userId: "me",
+      startHistoryId: historyId,
+    });
+    res.send(result.data);
+  }catch(error){
+    console.log(error)
+  }
 });
 
 app.use("/categories", categoryRouter);
