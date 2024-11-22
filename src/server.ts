@@ -24,6 +24,8 @@ import sql from "./dataAccess/init";
   }
 })();
 
+console.log(process.env.DB_URL)
+
 const app = express();
 const server = http.createServer(app);
 const port = 3000;
