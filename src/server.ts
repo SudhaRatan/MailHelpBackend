@@ -86,13 +86,13 @@ app.get("/logout", async (req, res) => {
 });
 
 app.get("/getMails", verifyToken, async (req, res) => {
-  const { nextPageToken } = req.query;
+  const { nextPageToken, max } = req.query;
   const gmail = google.gmail({ version: "v1", auth: oauth2Client });
   try {
     var r;
     r = await gmail.users.messages.list({
       userId: "me",
-      maxResults: 20,
+      maxResults: max,
       pageToken: nextPageToken,
     } as gmail_v1.Params$Resource$Users$Messages$List);
     // console.log(r.data);

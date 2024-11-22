@@ -27,7 +27,7 @@ const getMailData = (id, gmail) => {
                 const result = yield (0, mailparser_1.simpleParser)(decodedMessage, {
                     decodeStrings: true,
                 });
-                res(Object.assign(Object.assign({}, result), { snippet: data.data.snippet }));
+                res(Object.assign(Object.assign({}, result), { snippet: data.data.snippet, historyId: data.data.historyId }));
             }
         }))
             .catch((error) => {

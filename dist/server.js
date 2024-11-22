@@ -79,13 +79,13 @@ app.get("/logout", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     yield gmail.users.stop({ userId: "me" });
 }));
 app.get("/getMails", Auth_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { nextPageToken } = req.query;
+    const { nextPageToken, max } = req.query;
     const gmail = googleapis_1.google.gmail({ version: "v1", auth: oauth2Client });
     try {
         var r;
         r = yield gmail.users.messages.list({
             userId: "me",
-            maxResults: 20,
+            maxResults: max,
             pageToken: nextPageToken,
         });
         // console.log(r.data);
