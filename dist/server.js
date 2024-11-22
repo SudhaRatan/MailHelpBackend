@@ -20,10 +20,13 @@ const http_1 = __importDefault(require("http"));
 const cors_1 = __importDefault(require("cors"));
 const Auth_1 = require("./middlewares/Auth");
 const MailUtils_1 = require("./utils/MailUtils");
-const categoryDL_1 = require("./dataAccess/categoryDL");
+// Routes
+const category_1 = __importDefault(require("./routes/category"));
+const socket_io_1 = require("socket.io");
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 const port = 3000;
+const io = new socket_io_1.Server(server, { cors: { origin: "*" } });
 app.use(body_parser_1.default.json());
 exports.CLIENT_ID = process.env.CLIENT_ID;
 exports.CLIENT_SECRET = process.env.CLIENT_SECRET;
@@ -50,6 +53,16 @@ app.post("/api/auth", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         console.log(tokenInfo);
         oauth2Client.setCredentials({ access_token: access_token });
         // const response = await gmail.users.messages.list({ userId: 'me' });
+        const gmail = googleapis_1.google.gmail({ version: "v1", auth: oauth2Client });
+        yield gmail.users.stop({ userId: "me" });
+        yield gmail.users.watch({
+            userId: "me",
+            requestBody: {
+                labelIds: ["INBOX"],
+                topicName: "projects/mailhelp-442113/topics/MyTopic",
+                labelFilterAction: "INCLUDE",
+            },
+        });
         res.json({
             success: true,
             message: "Logged in successfully",
@@ -61,12 +74,20 @@ app.post("/api/auth", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.status(500).json({ success: false, error: error.message });
     }
 }));
+app.get("/logout", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const gmail = googleapis_1.google.gmail({ version: "v1", auth: oauth2Client });
+    yield gmail.users.stop({ userId: "me" });
+}));
 app.get("/getMails", Auth_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { nextPageToken } = req.query;
     const gmail = googleapis_1.google.gmail({ version: "v1", auth: oauth2Client });
     try {
         var r;
-        r = yield gmail.users.messages.list({ userId: "me", maxResults: 20, pageToken: nextPageToken });
+        r = yield gmail.users.messages.list({
+            userId: "me",
+            maxResults: 20,
+            pageToken: nextPageToken,
+        });
         // console.log(r.data);
         res.send(r.data);
     }
@@ -87,9 +108,29 @@ app.get("/mailData/:id", (req, res) => __awaiter(void 0, void 0, void 0, functio
         res.status(401).send(e);
     }
 }));
-app.get("/categories", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield (0, categoryDL_1.getCategories)();
-    res.send(result.recordset);
+app.get("/getNew/:historyId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { historyId } = req.params;
+    const gmail = googleapis_1.google.gmail({ version: "v1", auth: oauth2Client });
+    const result = yield gmail.users.history.list({
+        userId: "me",
+        startHistoryId: historyId,
+    });
+    res.send(result.data);
+}));
+app.use("/categories", category_1.default);
+io.on("connection", (socket) => {
+    console.log("User connected");
+    socket.on("join", (data) => {
+        console.log(data);
+        console.log(data.email, "has joined");
+        socket.join(data.email);
+    });
+});
+app.post("/notification", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(req.body);
+    const decodedData = JSON.parse(atob(req.body.message.data));
+    io.sockets.in(decodedData.emailAddress).emit("notification", decodedData);
+    res.status(200).send();
 }));
 server.listen(3000, function () {
     console.log("listening");

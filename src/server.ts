@@ -1,8 +1,4 @@
-import { promises as fs } from "fs";
-import path from "path";
-import { authenticate } from "@google-cloud/local-auth";
 import { gmail_v1, google } from "googleapis";
-import { simpleParser } from "mailparser";
 import bodyParser from "body-parser";
 
 import express from "express";
@@ -11,16 +7,17 @@ import cors from "cors";
 
 import { verifyToken } from "./middlewares/Auth";
 import { getMailData } from "./utils/MailUtils";
-import {
-  addCategory,
-  deleteCategory,
-  getCategories,
-  updateCategory,
-} from "./dataAccess/categoryDL";
+
+// Routes
+import categoryRouter from "./routes/category";
+
+import { Server } from "socket.io";
 
 const app = express();
 const server = http.createServer(app);
 const port = 3000;
+
+const io = new Server(server, { cors: { origin: "*" } });
 
 app.use(bodyParser.json());
 
@@ -62,7 +59,8 @@ app.post("/api/auth", async (req, res) => {
     oauth2Client.setCredentials({ access_token: access_token });
     // const response = await gmail.users.messages.list({ userId: 'me' });
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
-    gmail.users.watch({
+    await gmail.users.stop({ userId: "me" });
+    await gmail.users.watch({
       userId: "me",
       requestBody: {
         labelIds: ["INBOX"],
@@ -82,10 +80,10 @@ app.post("/api/auth", async (req, res) => {
   }
 });
 
-app.get("/logout",(req,res) => {
+app.get("/logout", async (req, res) => {
   const gmail = google.gmail({ version: "v1", auth: oauth2Client });
-  gmail.users.stop()
-})
+  await gmail.users.stop({ userId: "me" });
+});
 
 app.get("/getMails", verifyToken, async (req, res) => {
   const { nextPageToken } = req.query;
@@ -117,32 +115,32 @@ app.get("/mailData/:id", async (req, res) => {
   }
 });
 
-app.get("/categories", async (req, res) => {
-  const result = await getCategories();
-  res.send(result.recordset);
+app.get("/getNew/:historyId", async (req, res) => {
+  const { historyId } = req.params;
+  const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+  const result = await gmail.users.history.list({
+    userId: "me",
+    startHistoryId: historyId,
+  });
+  res.send(result.data);
 });
 
-// Categories
-app.post("/categories", async (req, res) => {
-  const { label } = req.body;
-  const result = await addCategory(label);
-  res.send(result.rowsAffected);
-});
+app.use("/categories", categoryRouter);
 
-app.put("/categories", async (req, res) => {
-  const { id, label } = req.body;
-  const result = await updateCategory(id, label);
-  res.send(result.rowsAffected);
-});
+io.on("connection", (socket) => {
+  console.log("User connected");
 
-app.delete("/categories", async (req, res) => {
-  const { id } = req.body;
-  const result = await deleteCategory(id);
-  res.send(result);
+  socket.on("join", (data) => {
+    console.log(data);
+    console.log(data.email, "has joined");
+    socket.join(data.email);
+  });
 });
 
 app.post("/notification", async (req, res) => {
   console.log(req.body);
+  const decodedData = JSON.parse(atob(req.body.message.data));
+  io.sockets.in(decodedData.emailAddress).emit("notification", decodedData);
   res.status(200).send();
 });
 
