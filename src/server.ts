@@ -13,8 +13,6 @@ import categoryRouter from "./routes/category";
 
 import { Server } from "socket.io";
 
-console.log(process.env.DB_URL);
-
 const app = express();
 const server = http.createServer(app);
 const port = 3000;

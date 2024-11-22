@@ -3,19 +3,9 @@ import sql from "mssql";
 (async () => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
-    await sql.connect({
-      server: process.env.SERVER as string,
-      user: process.env.USER,
-      password: process.env.Password,
-      options: {
-        trustedConnection: true,
-        trustServerCertificate: true,
-      },
-    });
-    console.log("Connected to db");
+    await sql.connect(process.env.DB_URL as string);
   } catch (err) {
     // ... error checks
-    console.log(err);
   }
 })();
 
