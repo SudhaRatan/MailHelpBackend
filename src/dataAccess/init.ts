@@ -11,7 +11,7 @@ import sql from "mssql";
         trustedConnection: true,
         trustServerCertificate: true,
       },
-      database:"storedb"
+      database:"mailai"
     });
     console.log("Connected to db");
   } catch (err) {

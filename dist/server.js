@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.REDIRECT_URL = exports.CLIENT_SECRET = exports.CLIENT_ID = void 0;
+exports.REDIRECT_URL = exports.CLIENT_SECRET = exports.CLIENT_ID = exports.setCategories = exports.categories = exports.io = void 0;
 const googleapis_1 = require("googleapis");
 const body_parser_1 = __importDefault(require("body-parser"));
 const express_1 = __importDefault(require("express"));
@@ -23,10 +23,17 @@ const MailUtils_1 = require("./utils/MailUtils");
 // Routes
 const category_1 = __importDefault(require("./routes/category"));
 const socket_io_1 = require("socket.io");
+const aiDL_1 = require("./dataAccess/aiDL");
+const aiOllama_1 = require("./ai/aiOllama");
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 const port = 3000;
-const io = new socket_io_1.Server(server, { cors: { origin: "*" } });
+exports.io = new socket_io_1.Server(server, { cors: { origin: "*" } });
+exports.categories = [];
+const setCategories = (c) => {
+    exports.categories = c;
+};
+exports.setCategories = setCategories;
 app.use(body_parser_1.default.json());
 exports.CLIENT_ID = process.env.CLIENT_ID;
 exports.CLIENT_SECRET = process.env.CLIENT_SECRET;
@@ -76,7 +83,10 @@ app.post("/api/auth", (req, res) => __awaiter(void 0, void 0, void 0, function* 
 }));
 app.get("/logout", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const gmail = googleapis_1.google.gmail({ version: "v1", auth: oauth2Client });
-    yield gmail.users.stop({ userId: "me" });
+    try {
+        yield gmail.users.stop({ userId: "me" });
+    }
+    catch (error) { }
 }));
 app.get("/getMails", Auth_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { nextPageToken, max } = req.query;
@@ -108,17 +118,40 @@ app.get("/mailData/:id", (req, res) => __awaiter(void 0, void 0, void 0, functio
         res.status(401).send(e);
     }
 }));
+app.post("/getAiResponse", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { mailId, mailText } = req.body;
+    var aiData = yield (0, aiDL_1.getAiData)(mailId);
+    try {
+        // check if not processed
+        if (aiData.recordset.length == 0) {
+            const aiRes = yield (0, aiOllama_1.getOLLAMAResponse)(exports.categories.map((i) => i.label), mailText);
+            const categoryId = yield (0, aiDL_1.saveAIData)({ mailId: mailId, aiRes: aiRes });
+            res.send({ mailId: mailId, categoryId, aiResponse: aiRes });
+        }
+        else {
+            res.send(aiData.recordset[0]);
+        }
+    }
+    catch (e) {
+        console.warn(e);
+    }
+}));
 app.get("/getNew/:historyId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { historyId } = req.params;
-    const gmail = googleapis_1.google.gmail({ version: "v1", auth: oauth2Client });
-    const result = yield gmail.users.history.list({
-        userId: "me",
-        startHistoryId: historyId,
-    });
-    res.send(result.data);
+    try {
+        const gmail = googleapis_1.google.gmail({ version: "v1", auth: oauth2Client });
+        const result = yield gmail.users.history.list({
+            userId: "me",
+            startHistoryId: historyId,
+        });
+        res.send(result.data);
+    }
+    catch (error) {
+        console.log(error);
+    }
 }));
 app.use("/categories", category_1.default);
-io.on("connection", (socket) => {
+exports.io.on("connection", (socket) => {
     console.log("User connected");
     socket.on("join", (data) => {
         console.log(data);
@@ -129,7 +162,7 @@ io.on("connection", (socket) => {
 app.post("/notification", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(req.body);
     const decodedData = JSON.parse(atob(req.body.message.data));
-    io.sockets.in(decodedData.emailAddress).emit("notification", decodedData);
+    exports.io.sockets.in(decodedData.emailAddress).emit("notification", decodedData);
     res.status(200).send();
 }));
 server.listen(3000, function () {

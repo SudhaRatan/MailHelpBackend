@@ -14,24 +14,39 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const categoryDL_1 = require("../dataAccess/categoryDL");
+const server_1 = require("../server");
 const router = express_1.default.Router();
-router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getCats = () => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield (0, categoryDL_1.getCategories)();
+    (0, server_1.setCategories)(result.recordset);
+    return result;
+});
+router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield getCats();
     res.send(result.recordset);
 }));
 router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { label } = req.body;
-    const result = yield (0, categoryDL_1.addCategory)(label);
-    res.send(result.rowsAffected);
+    try {
+        const result = yield (0, categoryDL_1.addCategory)(label);
+        server_1.io.emit("dataChange", "category");
+        res.send(result);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send(error);
+    }
 }));
 router.put("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id, label } = req.body;
     const result = yield (0, categoryDL_1.updateCategory)(id, label);
+    server_1.io.emit("dataChange", "category");
     res.send(result.rowsAffected);
 }));
-router.delete("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.body;
-    const result = yield (0, categoryDL_1.deleteCategory)(id);
+router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const result = yield (0, categoryDL_1.deleteCategory)(Number(id));
+    server_1.io.emit("dataChange", "category");
     res.send(result);
 }));
 exports.default = router;
