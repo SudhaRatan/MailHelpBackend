@@ -119,13 +119,12 @@ app.get("/getMails", verifyToken, async (req, res) => {
     var r;
     r = await gmail.users.messages.list({
       userId: "me",
-      maxResults: max,
+      maxResults: Number(max) + 15,
       pageToken: nextPageToken,
       labelIds: ["INBOX"],
-      q: "-in:sent",
+      // q: "-in:sent",
     } as gmail_v1.Params$Resource$Users$Messages$List);
-    // console.log(r.data);
-    res.send(r.data);
+    res.send(r.data)
   } catch (error) {
     console.log(error);
     res.status(401).send();
