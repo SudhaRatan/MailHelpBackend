@@ -240,7 +240,9 @@ app.get("/getNew/:historyId", async (req, res) => {
     const result = await gmail.users.history.list({
       userId: "me",
       startHistoryId: historyId,
-    });
+      labelIds: ["INBOX"], // Only get messages with INBOX label
+      historyTypes: ["messageAdded"],
+    } as  gmail_v1.Params$Resource$Users$History$List);
     res.send(result.data);
   } catch (error) {
     console.log(error);
@@ -274,7 +276,7 @@ app.post("/dashboard", async (req, res) => {
   const { startDate, endDate } = req.body;
   if (startDate && endDate) {
     const result = await getDashboardData(startDate, endDate);
-    res.send(result)
+    res.send(result);
   } else {
     res.status(404).send();
   }
