@@ -39,7 +39,10 @@ const getInstruction = (categories: string[]) => {
             }
         </ExampleFormat>
     </OutputFormat>
-
+    
+    Use your intelligence only if the mail is related to vehicle insurance else reply with this text and do not hallucinate.
+    "Thank you for reaching out. It seems your query does not pertain to vehicle insurance. If this is an unrelated matter, please contact our general support team at generalsupport@gmail.com." and make the category as "ADHOC"
+    
     <Examples>
         <Example>
             <EmailContent>
@@ -66,6 +69,25 @@ const getInstruction = (categories: string[]) => {
                   "category": "Modifications",
                   "summary": "Request to add a new vehicle to the policy and inquire about premium impact.",
                   "suggestedReply": "Dear John Doe,\n\nThank you for reaching out. We will update your policy with the new vehicle details and inform you about any changes to your premium shortly.\n\nBest regards,\nInsurance Team"
+                }
+            </Output>
+        </Example>
+
+        <Example>
+            <EmailContent>
+                <Subject>Check for the insurance claim.</Subject>
+                Hi team, 
+                I got a new job offer from xyz company. 
+                what do you think about the offer and what information do I need to know before joining the company?
+                Thanks,
+                Praneetha.
+            </EmailContent>
+            <Output>
+                {
+                  "action": "",
+                  "category": "ADHOC"
+                  "summary": "Unrelated email",
+                  "suggestedReply": "Thank you for reaching out.\nIt seems your query does not pertain to vehicle insurance. If this is an unrelated matter, please contact our general support team at generalsupport@gmail.com.\nRegards, \nInsurance team."
                 }
             </Output>
         </Example>
@@ -116,7 +138,6 @@ const getInstruction = (categories: string[]) => {
         <Point>The summary should be short, clear, and capture the essence of the email's content.</Point>
         <Point>The suggested reply should be polite and address the customer's request or inquiry appropriately, signed off as 'Insurance Team.'</Point>
     </KeyPoints>
-    <Important>If the mail is not related to insurance, then reply with this text: "Thank you for reaching out. It seems your query does not pertain to vehicle insurance. If this is an unrelated matter, please contact our general support team at generalsupport@gmail.com." and make the category as "ADHOC"</Important>
 
 </Instructions>`
   return systemInstruction;
