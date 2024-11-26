@@ -116,6 +116,7 @@ const getInstruction = (categories: string[]) => {
         <Point>The summary should be short, clear, and capture the essence of the email's content.</Point>
         <Point>The suggested reply should be polite and address the customer's request or inquiry appropriately, signed off as 'Insurance Team.'</Point>
     </KeyPoints>
+    <Important>If the mail is not related to insurance, then reply with this text: "Thank you for reaching out. It seems your query does not pertain to vehicle insurance. If this is an unrelated matter, please contact our general support team at generalsupport@gmail.com." and make the category as "ADHOC"</Important>
 
 </Instructions>`
   return systemInstruction;
